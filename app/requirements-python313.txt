@@ -1,0 +1,15 @@
+# Requirements specifically for Python 3.13
+Flask
+Werkzeug
+Jinja2
+MarkupSafe
+click
+itsdangerous
+numpy
+pandas
+gunicorn
+
+# TensorFlow for Python 3.13 - use latest available
+tensorflow-cpu>=2.17.0
+
+# Note: Some packages may not have pre-compiled wheels for Python 3.13 yet
