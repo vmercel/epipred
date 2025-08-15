@@ -10,6 +10,14 @@ import tensorflow as tf
 from tensorflow import keras
 import logging
 
+# Optional imports for deployment compatibility
+try:
+    import sklearn
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    logging.warning("scikit-learn not available - some features may be limited")
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -19,6 +19,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import the Flask app for WSGI deployment
+try:
+    from app import app
+    logger.info("Flask app imported successfully for WSGI deployment")
+except ImportError as e:
+    logger.error(f"Failed to import Flask app: {e}")
+    # Create a dummy app for error handling
+    from flask import Flask
+    app = Flask(__name__)
+    
+    @app.route('/')
+    def error():
+        return f"Import Error: {e}", 500
+
 def check_dependencies():
     """Check if required dependencies are installed"""
     required_packages = [
@@ -45,6 +59,9 @@ def check_dependencies():
 def check_model_files():
     """Check if model files exist"""
     model_paths = [
+        'models/epitope_model.keras',
+        'models/epitope_model.h5',
+        'models/epitope_model_savedmodel',
         '../epitope_model.keras',
         '../epitope_model.h5',
         '../epitope_model_savedmodel',
@@ -59,7 +76,7 @@ def check_model_files():
             return True
     
     logger.warning("No model files found. Please ensure model files are available.")
-    logger.warning("Expected locations: epitope_model.keras, epitope_model.h5, or epitope_model_savedmodel")
+    logger.warning("Expected locations: models/ directory or current directory")
     return False
 
 def create_directories():
@@ -68,7 +85,8 @@ def create_directories():
         'static/uploads',
         'static/css',
         'static/js',
-        'templates'
+        'templates',
+        'models'
     ]
     
     for directory in directories:
@@ -90,32 +108,21 @@ def main():
     # Create directories
     create_directories()
     
-    # Import and run the Flask app
-    try:
-        from app import app
-        
-        # Configuration
-        app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-        host = os.environ.get('FLASK_HOST', '0.0.0.0')
-        port = int(os.environ.get('FLASK_PORT', 5000))
-        
-        logger.info(f"Starting server on {host}:{port}")
-        logger.info(f"Debug mode: {app.config['DEBUG']}")
-        
-        # Run the application
-        app.run(
-            host=host,
-            port=port,
-            debug=app.config['DEBUG'],
-            threaded=True
-        )
-        
-    except ImportError as e:
-        logger.error(f"Failed to import Flask app: {e}")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"Failed to start application: {e}")
-        sys.exit(1)
+    # Configuration
+    app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    host = os.environ.get('FLASK_HOST', '0.0.0.0')
+    port = int(os.environ.get('FLASK_PORT', 5000))
+    
+    logger.info(f"Starting server on {host}:{port}")
+    logger.info(f"Debug mode: {app.config['DEBUG']}")
+    
+    # Run the application
+    app.run(
+        host=host,
+        port=port,
+        debug=app.config['DEBUG'],
+        threaded=True
+    )
 
 if __name__ == '__main__':
     main()

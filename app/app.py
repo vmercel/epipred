@@ -74,6 +74,17 @@ def about():
     logger.info("Serving about page")
     return render_template('about.html')
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for deployment monitoring"""
+    from datetime import datetime
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'model_loaded': predictor is not None,
+        'version': '1.0.0'
+    })
+
 @app.route('/status')
 def status():
     """System status endpoint for monitoring"""
