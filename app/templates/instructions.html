@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block page_title %}Instructions{% endblock %}
+{% block page_subtitle %}How to use the EpiPred epitope prediction tool{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Main Instructions -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-book me-2"></i>How to Use EpiPred</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    The EpiPred server predicts B-cell and T-cell epitopes from protein sequences using 
+                    an advanced deep learning model with attention mechanisms and bidirectional LSTM networks.
+                </p>
+                
+                <h5 class="mt-4 mb-3"><i class="fas fa-upload me-2"></i>Step 1: Input Your Sequences</h5>
+                <p>
+                    EpiPred requires protein sequence(s) in FASTA format and cannot handle nucleic acid sequences.
+                </p>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="text-primary">Option A: Paste Sequences</h6>
+                            <p class="mb-0">
+                                Paste protein sequence(s) in FASTA format into the text field marked by arrow A.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="text-primary">Option B: Upload File</h6>
+                            <p class="mb-0">
+                                Upload a FASTA file using the file upload button marked by arrow B.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="mt-4 mb-3"><i class="fas fa-play me-2"></i>Step 2: Submit for Analysis</h5>
+                <p>
+                    Click the "Predict Epitopes" button (marked by arrow C) when protein sequences are entered. 
+                    The analysis may take a few minutes depending on the number and length of sequences.
+                </p>
+                
+                <h5 class="mt-4 mb-3"><i class="fas fa-chart-line me-2"></i>Step 3: View Results</h5>
+                <p>
+                    After the server successfully finishes the job, a results page will appear showing:
+                </p>
+                <ul>
+                    <li><strong>Summary statistics</strong> - Total number of sequences analyzed and epitopes found</li>
+                    <li><strong>Interactive threshold control</strong> - Adjust confidence threshold to filter results</li>
+                    <li><strong>Sequence visualization</strong> - View sequences with epitope markup</li>
+                    <li><strong>Detailed tables</strong> - B-cell and T-cell epitopes with confidence scores</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- FASTA Format Guide -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>FASTA Format Guide</h4>
+            </div>
+            <div class="card-body">
+                <p>FASTA format is a text-based format for representing protein sequences. Here's what you need to know:</p>
+                
+                <h6 class="text-info">Basic Structure:</h6>
+                <pre class="bg-light p-3 rounded"><code>>Header_Line_Starting_With_Greater_Than
+AMINO_ACID_SEQUENCE_HERE
+>Another_Sequence_Header
+ANOTHER_AMINO_ACID_SEQUENCE</code></pre>
+                
+                <h6 class="text-info mt-3">Rules:</h6>
+                <ul>
+                    <li>Each sequence must start with a header line beginning with '<strong>></strong>'</li>
+                    <li>Header lines can contain sequence names and descriptions</li>
+                    <li>Sequence lines should contain only standard amino acid letters (A-Z)</li>
+                    <li>Multiple sequences can be included in a single submission</li>
+                    <li>Blank lines are ignored</li>
+                </ul>
+                
+                <h6 class="text-info mt-3">Example:</h6>
+                <pre class="bg-light p-3 rounded"><code>>Human_Insulin_A_Chain
+GIVEQCCTSICSLYQLENYCN
+
+>Human_Insulin_B_Chain  
+FVNQHLCGSHLVEALYLVCGERGFFYTPKT
+
+>Example_Antigen_Protein
+MKLLILTCLVAVALARPKHPIKHQGLPQEVLNENLLRFFVAPFPEVFGKEKVNEL
+CARFASLIYGKFVRQPQVWLRIQNYSVMDICDEHQGVMVPGVGVPQALQKYNPD</code></pre>
+            </div>
+        </div>
+
+        <!-- Results Interpretation -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Interpreting Results</h4>
+            </div>
+            <div class="card-body">
+                <h6 class="text-success">Confidence Scores:</h6>
+                <p>
+                    Each predicted epitope comes with a confidence score between 0.0 and 1.0:
+                </p>
+                <ul>
+                    <li><strong>0.8 - 1.0:</strong> High confidence predictions</li>
+                    <li><strong>0.6 - 0.8:</strong> Medium confidence predictions</li>
+                    <li><strong>0.5 - 0.6:</strong> Lower confidence predictions</li>
+                    <li><strong>Below 0.5:</strong> Not shown by default (adjust threshold to view)</li>
+                </ul>
+                
+                <h6 class="text-success mt-3">Sequence Markup:</h6>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="epitope-b me-2">B</span>
+                    <span>B-cell epitope regions</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="epitope-t me-2">T</span>
+                    <span>T-cell epitope regions</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="non-epitope me-2">.</span>
+                    <span>Non-epitope regions</span>
+                </div>
+                
+                <h6 class="text-success mt-3">Position Ranges:</h6>
+                <p>
+                    Position ranges are given in 1-based indexing (first amino acid is position 1).
+                    For example, "15-34" means the epitope spans from the 15th to 34th amino acid.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Quick Tips -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Best Practices:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Use descriptive sequence names in headers</li>
+                        <li>Check sequences for typos before submission</li>
+                        <li>Start with high confidence threshold (0.7-0.8)</li>
+                        <li>Consider biological context when interpreting results</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Common Issues:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Missing '>' at start of header lines</li>
+                        <li>Non-standard amino acid characters</li>
+                        <li>Sequences that are too short (&lt;10 AA)</li>
+                        <li>Mixed protein and DNA sequences</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submission Limits -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-ruler me-2"></i>Submission Limits</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Max sequences:</strong></td>
+                        <td>50 per submission</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max total length:</strong></td>
+                        <td>300,000 amino acids</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Min sequence length:</strong></td>
+                        <td>10 amino acids</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max sequence length:</strong></td>
+                        <td>6,000 amino acids</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max file size:</strong></td>
+                        <td>16 MB</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-compass me-2"></i>Navigation</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Start Analysis
+                    </a>
+                    <a href="{{ url_for('about') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-info-circle me-2"></i>About the Method
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

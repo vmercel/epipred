@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block page_title %}EpiPred - Epitope Prediction{% endblock %}
+{% block page_subtitle %}Paste or upload protein sequence(s) in FASTA format to predict potential B-cell and T-cell epitopes{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Submission Form -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-upload me-2"></i>Submit Data</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('predict') }}" enctype="multipart/form-data" id="predictionForm">
+                    <!-- Sequence Input -->
+                    <div class="mb-4">
+                        <label for="sequence_text" class="form-label">
+                            <strong>A. Paste protein sequence(s) in FASTA format:</strong>
+                        </label>
+                        <textarea class="form-control font-monospace" 
+                                  id="sequence_text" 
+                                  name="sequence_text" 
+                                  rows="8" 
+                                  placeholder=">Example_Protein_1&#10;MKLLILTCLVAVALARPKHPIKHQGLPQEVLNENLLRFFVAPFPEVFGKEKVNEL&#10;CARFASLIYGKFVRQPQVWLRIQNYSVMDICDEHQGVMVPGVGVPQALQKYNPD&#10;&#10;>Example_Protein_2&#10;MKTVRQERLKSIVRILERSKEPVSGAQLAEELSVSRQVIVQDIAYLRSLGYNIVATPRGYVLAGG"></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Enter protein sequences in FASTA format. Each sequence should start with a header line beginning with '>' followed by the amino acid sequence.
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="mb-4">
+                        <label for="sequence_file" class="form-label">
+                            <strong>B. Or upload a FASTA file:</strong>
+                        </label>
+                        <div class="input-group">
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="sequence_file" 
+                                   name="sequence_file" 
+                                   accept=".txt,.fasta,.fa,.fas">
+                            <label class="input-group-text" for="sequence_file">
+                                <i class="fas fa-file-upload"></i>
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Supported formats: .txt, .fasta, .fa, .fas (Max file size: 16MB)
+                        </div>
+                        <div id="file-info" class="mt-2 text-muted"></div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                            <i class="fas fa-play me-2"></i>Predict Epitopes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Example File Link -->
+        <div class="mt-3 text-center">
+            <a href="#" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fas fa-download me-1"></i>Example FASTA File
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Information Panel -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Submission Limits</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Maximum:</strong> 50 sequences per submission
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Total length:</strong> Up to 300,000 amino acids
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Sequence length:</strong> 10-6000 amino acids each
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>Processing time:</strong> A few minutes per sequence
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Method Information -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-brain me-2"></i>Method</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    EpiPred uses an advanced deep learning model with attention mechanisms 
+                    and bidirectional LSTM networks to predict B-cell and T-cell epitopes 
+                    from protein sequences.
+                </p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        The model employs sliding window analysis with overlapping segments 
+                        to provide comprehensive epitope predictions with confidence scores.
+                    </small>
+                </p>
+                <a href="{{ url_for('about') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Example Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Example FASTA File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Here's an example of properly formatted FASTA input:</p>
+                <pre class="bg-light p-3 rounded"><code>>Human_Insulin_A_Chain
+GIVEQCCTSICSLYQLENYCN
+
+>Human_Insulin_B_Chain
+FVNQHLCGSHLVEALYLVCGERGFFYTPKT
+
+>Example_Antigen
+MKLLILTCLVAVALARPKHPIKHQGLPQEVLNENLLRFFVAPFPEVFGKEKVNEL
+CARFASLIYGKFVRQPQVWLRIQNYSVMDICDEHQGVMVPGVGVPQALQKYNPD
+AVNQVVDLMAHMASKDNRAHGDNKFRNRNQRKQRNSTRHIQLGLPAAMADVLFVL
+FGAATGFHSGGIASYNFPKATLQSQVKELQAAQARLGADMEDVCGRLVQRGNQVA
+YYRGISALQLEECDFFPQHIQVQVQLEQVVGVVKPLLVQVQHQDYLAAVSVAQL</code></pre>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tips:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Each sequence must start with a header line beginning with '>'</li>
+                        <li>Header lines can contain sequence names and descriptions</li>
+                        <li>Sequence lines should contain only standard amino acid letters</li>
+                        <li>Multiple sequences can be included in a single submission</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyExample()">
+                    <i class="fas fa-copy me-1"></i>Copy Example
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// File upload info display
+document.getElementById('sequence_file').addEventListener('change', function(e) {
+    const fileInfo = document.getElementById('file-info');
+    if (e.target.files.length > 0) {
+        const file = e.target.files[0];
+        const size = (file.size / 1024 / 1024).toFixed(2);
+        fileInfo.innerHTML = `<i class="fas fa-file me-1"></i>Selected: ${file.name} (${size} MB)`;
+        fileInfo.className = 'mt-2 text-info';
+    } else {
+        fileInfo.innerHTML = '';
+    }
+});
+
+// Copy example function
+function copyExample() {
+    const exampleText = `>Human_Insulin_A_Chain
+GIVEQCCTSICSLYQLENYCN
+
+>Human_Insulin_B_Chain
+FVNQHLCGSHLVEALYLVCGERGFFYTPKT
+
+>Example_Antigen
+MKLLILTCLVAVALARPKHPIKHQGLPQEVLNENLLRFFVAPFPEVFGKEKVNEL
+CARFASLIYGKFVRQPQVWLRIQNYSVMDICDEHQGVMVPGVGVPQALQKYNPD`;
+    
+    document.getElementById('sequence_text').value = exampleText;
+    $('#exampleModal').modal('hide');
+    
+    // Show success message
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+    alert.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        Example sequences copied to input field!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container.my-4').insertBefore(alert, document.querySelector('.row'));
+    
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 3000);
+}
+
+// Form validation
+document.getElementById('predictionForm').addEventListener('submit', function(e) {
+    const sequenceText = document.getElementById('sequence_text').value.trim();
+    const sequenceFile = document.getElementById('sequence_file').files.length > 0;
+    
+    if (!sequenceText && !sequenceFile) {
+        e.preventDefault();
+        alert('Please provide protein sequences either by pasting text or uploading a file.');
+        return false;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

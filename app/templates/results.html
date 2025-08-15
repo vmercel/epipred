@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block page_title %}Prediction Results{% endblock %}
+{% block page_subtitle %}Epitope prediction results for {{ results.total_sequences }} sequence(s){% endblock %}
+
+{% block extra_head %}
+<style>
+.sequence-display {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-all;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.epitope-b { background-color: #ff6b6b; color: white; padding: 1px 2px; border-radius: 2px; }
+.epitope-t { background-color: #4ecdc4; color: white; padding: 1px 2px; border-radius: 2px; }
+.non-epitope { color: #6c757d; }
+
+.confidence-bar {
+    height: 20px;
+    background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.confidence-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.epitope-card {
+    transition: transform 0.2s ease;
+}
+
+.epitope-card:hover {
+    transform: translateY(-2px);
+}
+
+.threshold-slider {
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Results Header -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Prediction Complete
+                    </h4>
+                    <small>Job ID: {{ job_id }}</small>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-download me-1"></i>Download Results
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('download_results', job_id=job_id, format='csv') }}">
+                            <i class="fas fa-file-csv me-2"></i>CSV Format
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('download_results', job_id=job_id, format='json') }}">
+                            <i class="fas fa-file-code me-2"></i>JSON Format
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h5 class="text-primary">{{ results.total_sequences }}</h5>
+                        <small class="text-muted">Sequences Analyzed</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="text-danger" id="total-b-cell">0</h5>
+                        <small class="text-muted">B-cell Epitopes</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="text-info" id="total-t-cell">0</h5>
+                        <small class="text-muted">T-cell Epitopes</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="text-success">{{ results.timestamp.split('T')[0] }}</h5>
+                        <small class="text-muted">Analysis Date</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Threshold Control -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sliders-h me-2"></i>Epitope Threshold Control
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <label for="thresholdSlider" class="form-label">
+                            Confidence Threshold: <span id="thresholdValue">0.50</span>
+                        </label>
+                        <input type="range" class="form-range threshold-slider" 
+                               id="thresholdSlider" 
+                               min="0" max="1" step="0.01" value="0.5">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">0.0 (Low)</small>
+                            <small class="text-muted">1.0 (High)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <small>Adjust threshold to filter epitopes by confidence score</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results for each sequence -->
+        {% for seq_name, data in results.results.items() %}
+        <div class="card shadow-sm mb-4 sequence-result">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-dna me-2"></i>{{ seq_name }}
+                    </h5>
+                    <span class="badge bg-secondary">{{ data.length }} amino acids</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Sequence Visualization -->
+                <div class="mb-4">
+                    <h6>Sequence with Epitope Markup:</h6>
+                    <div class="sequence-display" id="sequence-{{ loop.index }}">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <span class="epitope-b">B</span> B-cell epitopes &nbsp;
+                            <span class="epitope-t">T</span> T-cell epitopes &nbsp;
+                            <span class="non-epitope">.</span> Non-epitope regions
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Epitope Tables -->
+                <div class="row">
+                    <!-- B-cell Epitopes -->
+                    <div class="col-md-6">
+                        <h6 class="text-danger">
+                            <i class="fas fa-circle me-1"></i>B-cell Epitopes 
+                            <span class="badge bg-danger" id="b-count-{{ loop.index }}">{{ data.b_cell_epitopes|length }}</span>
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sequence</th>
+                                        <th>Position</th>
+                                        <th>Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="b-epitopes-{{ loop.index }}">
+                                    {% for epitope, confidence, pos_range in data.b_cell_epitopes %}
+                                    <tr class="epitope-row" data-confidence="{{ confidence }}">
+                                        <td class="font-monospace">{{ epitope }}</td>
+                                        <td>{{ pos_range }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="confidence-bar me-2" style="width: 60px;">
+                                                    <div class="confidence-indicator" style="width: {{ (confidence * 100)|round }}%;"></div>
+                                                </div>
+                                                <small>{{ "%.3f"|format(confidence) }}</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- T-cell Epitopes -->
+                    <div class="col-md-6">
+                        <h6 class="text-info">
+                            <i class="fas fa-circle me-1"></i>T-cell Epitopes 
+                            <span class="badge bg-info" id="t-count-{{ loop.index }}">{{ data.t_cell_epitopes|length }}</span>
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sequence</th>
+                                        <th>Position</th>
+                                        <th>Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="t-epitopes-{{ loop.index }}">
+                                    {% for epitope, confidence, pos_range in data.t_cell_epitopes %}
+                                    <tr class="epitope-row" data-confidence="{{ confidence }}">
+                                        <td class="font-monospace">{{ epitope }}</td>
+                                        <td>{{ pos_range }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="confidence-bar me-2" style="width: 60px;">
+                                                    <div class="confidence-indicator" style="width: {{ (confidence * 100)|round }}%;"></div>
+                                                </div>
+                                                <small>{{ "%.3f"|format(confidence) }}</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Store data for JavaScript -->
+        <script type="application/json" id="sequence-data-{{ loop.index }}">
+            {
+                "sequence": {{ data.sequence|tojson }},
+                "b_cell_epitopes": {{ data.b_cell_epitopes|tojson }},
+                "t_cell_epitopes": {{ data.t_cell_epitopes|tojson }}
+            }
+        </script>
+        {% endfor %}
+
+        <!-- Back to Home -->
+        <div class="text-center mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Analyze New Sequences
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Store all sequence data
+const sequenceData = {};
+{% for seq_name, data in results.results.items() %}
+sequenceData[{{ loop.index }}] = JSON.parse(document.getElementById('sequence-data-{{ loop.index }}').textContent);
+{% endfor %}
+
+// Initialize sequence displays
+function initializeSequenceDisplays() {
+    Object.keys(sequenceData).forEach(index => {
+        updateSequenceDisplay(index, 0.5);
+    });
+    updateTotalCounts(0.5);
+}
+
+// Update sequence display with epitope markup
+function updateSequenceDisplay(index, threshold) {
+    const data = sequenceData[index];
+    const sequence = data.sequence;
+    let markup = new Array(sequence.length).fill('.');
+    
+    // Mark B-cell epitopes
+    data.b_cell_epitopes.forEach(([epitope, confidence, pos_range]) => {
+        if (confidence >= threshold) {
+            const [start, end] = pos_range.split('-').map(x => parseInt(x) - 1);
+            for (let i = start; i <= Math.min(end, sequence.length - 1); i++) {
+                markup[i] = 'B';
+            }
+        }
+    });
+    
+    // Mark T-cell epitopes (may override B-cell)
+    data.t_cell_epitopes.forEach(([epitope, confidence, pos_range]) => {
+        if (confidence >= threshold) {
+            const [start, end] = pos_range.split('-').map(x => parseInt(x) - 1);
+            for (let i = start; i <= Math.min(end, sequence.length - 1); i++) {
+                markup[i] = 'T';
+            }
+        }
+    });
+    
+    // Create HTML with markup
+    let html = '';
+    for (let i = 0; i < sequence.length; i++) {
+        const aa = sequence[i];
+        if (markup[i] === 'B') {
+            html += `<span class="epitope-b">${aa}</span>`;
+        } else if (markup[i] === 'T') {
+            html += `<span class="epitope-t">${aa}</span>`;
+        } else {
+            html += `<span class="non-epitope">${aa}</span>`;
+        }
+        
+        // Add line breaks every 60 characters
+        if ((i + 1) % 60 === 0) {
+            html += '<br>';
+        }
+    }
+    
+    document.getElementById(`sequence-${index}`).innerHTML = html;
+}
+
+// Update epitope tables based on threshold
+function updateEpitopeTables(threshold) {
+    Object.keys(sequenceData).forEach(index => {
+        const data = sequenceData[index];
+        
+        // Update B-cell epitopes
+        const bRows = document.querySelectorAll(`#b-epitopes-${index} .epitope-row`);
+        let bCount = 0;
+        bRows.forEach(row => {
+            const confidence = parseFloat(row.dataset.confidence);
+            if (confidence >= threshold) {
+                row.style.display = '';
+                bCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        document.getElementById(`b-count-${index}`).textContent = bCount;
+        
+        // Update T-cell epitopes
+        const tRows = document.querySelectorAll(`#t-epitopes-${index} .epitope-row`);
+        let tCount = 0;
+        tRows.forEach(row => {
+            const confidence = parseFloat(row.dataset.confidence);
+            if (confidence >= threshold) {
+                row.style.display = '';
+                tCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        document.getElementById(`t-count-${index}`).textContent = tCount;
+    });
+}
+
+// Update total counts
+function updateTotalCounts(threshold) {
+    let totalB = 0, totalT = 0;
+    
+    Object.keys(sequenceData).forEach(index => {
+        const data = sequenceData[index];
+        
+        data.b_cell_epitopes.forEach(([epitope, confidence, pos_range]) => {
+            if (confidence >= threshold) totalB++;
+        });
+        
+        data.t_cell_epitopes.forEach(([epitope, confidence, pos_range]) => {
+            if (confidence >= threshold) totalT++;
+        });
+    });
+    
+    document.getElementById('total-b-cell').textContent = totalB;
+    document.getElementById('total-t-cell').textContent = totalT;
+}
+
+// Threshold slider event
+document.getElementById('thresholdSlider').addEventListener('input', function(e) {
+    const threshold = parseFloat(e.target.value);
+    document.getElementById('thresholdValue').textContent = threshold.toFixed(2);
+    
+    // Update displays
+    Object.keys(sequenceData).forEach(index => {
+        updateSequenceDisplay(index, threshold);
+    });
+    updateEpitopeTables(threshold);
+    updateTotalCounts(threshold);
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSequenceDisplays();
+});
+</script>
+{% endblock %}

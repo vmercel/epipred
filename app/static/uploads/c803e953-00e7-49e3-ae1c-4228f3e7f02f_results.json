@@ -1,0 +1,122 @@
+{
+  "job_id": "c803e953-00e7-49e3-ae1c-4228f3e7f02f",
+  "timestamp": "2025-08-15T05:57:31.609950",
+  "results": {
+    "Human_Insulin_A_Chain": {
+      "sequence": "GIVEQCCTSICSLYQLENYCN",
+      "b_cell_epitopes": [],
+      "t_cell_epitopes": [],
+      "length": 21
+    },
+    "Human_Insulin_B_Chain": {
+      "sequence": "FVNQHLCGSHLVEALYLVCGERGFFYTPKT",
+      "b_cell_epitopes": [
+        [
+          "VNQHLCGSHLVEALYLVCGE",
+          0.9999999403953552,
+          "2-21"
+        ],
+        [
+          "NQHLCGSHLVEALYLVCGER",
+          0.9999999403953552,
+          "3-22"
+        ],
+        [
+          "CGSHLVEALYLVCGERGFFY",
+          0.9999999403953552,
+          "7-26"
+        ]
+      ],
+      "t_cell_epitopes": [],
+      "length": 30
+    },
+    "Example_Antigen": {
+      "sequence": "MKLLILTCLVAVALARPKHPIKHQGLPQEVLNENLLRFFVAPFPEVFGKEKVNELCARFASLIYGKFVRQPQVWLRIQNYSVMDICDEHQGVMVPGVGVPQALQKYNPD",
+      "b_cell_epitopes": [
+        [
+          "HQGVMVPGVGVPQALQKYNP",
+          1.0,
+          "89-108"
+        ],
+        [
+          "QGVMVPGVGVPQALQKYNPD",
+          1.0,
+          "90-109"
+        ],
+        [
+          "KLLILTCLVAVALARPKHPI",
+          0.9999999403953552,
+          "2-21"
+        ],
+        [
+          "RPKHPIKHQGLPQEVLNENL",
+          0.9999999403953552,
+          "16-35"
+        ],
+        [
+          "HPIKHQGLPQEVLNENLLRF",
+          0.9999999403953552,
+          "19-38"
+        ],
+        [
+          "VLNENLLRFFVAPFPEVFGK",
+          0.9999999403953552,
+          "30-49"
+        ],
+        [
+          "LNENLLRFFVAPFPEVFGKE",
+          0.9999999403953552,
+          "31-50"
+        ],
+        [
+          "VFGKEKVNELCARFASLIYG",
+          0.9999999403953552,
+          "46-65"
+        ],
+        [
+          "GKEKVNELCARFASLIYGKF",
+          0.9999999403953552,
+          "48-67"
+        ],
+        [
+          "KEKVNELCARFASLIYGKFV",
+          0.9999999403953552,
+          "49-68"
+        ],
+        [
+          "LIYGKFVRQPQVWLRIQNYS",
+          0.9999999403953552,
+          "62-81"
+        ],
+        [
+          "YGKFVRQPQVWLRIQNYSVM",
+          0.9999999403953552,
+          "64-83"
+        ],
+        [
+          "QPQVWLRIQNYSVMDICDEH",
+          0.9999999403953552,
+          "70-89"
+        ],
+        [
+          "PQVWLRIQNYSVMDICDEHQ",
+          0.9999999403953552,
+          "71-90"
+        ],
+        [
+          "RIQNYSVMDICDEHQGVMVP",
+          0.9999999403953552,
+          "76-95"
+        ],
+        [
+          "DEHQGVMVPGVGVPQALQKY",
+          0.9999999403953552,
+          "87-106"
+        ]
+      ],
+      "t_cell_epitopes": [],
+      "length": 109
+    }
+  },
+  "total_sequences": 3
+}
