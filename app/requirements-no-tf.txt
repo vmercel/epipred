@@ -1,0 +1,8 @@
+# Minimal requirements without TensorFlow for testing deployment
+Flask>=2.3.0,<3.0.0
+Werkzeug>=2.3.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+gunicorn>=21.0.0,<22.0.0
+
+# Note: TensorFlow will need to be added separately or the app will run in demo mode

@@ -1,0 +1,6 @@
+# Most basic requirements that should work on any Python 3.12+ system
+Flask
+Werkzeug
+numpy
+pandas
+gunicorn

@@ -1,12 +1,11 @@
-# Minimal requirements for deployment to avoid compilation issues
-Flask==2.3.3
-Werkzeug==2.3.7
-numpy==1.24.3
-pandas==2.0.3
-gunicorn==21.2.0
+# Ultra-minimal requirements for deployment
+Flask>=2.3.0,<4.0.0
+Werkzeug>=2.3.0,<4.0.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+gunicorn>=21.0.0,<23.0.0
 
-# Use CPU-only TensorFlow to reduce size and avoid GPU dependencies
-tensorflow-cpu==2.13.1
+# Use latest stable TensorFlow CPU version (compatible with Python 3.12+)
+tensorflow-cpu>=2.16.0
 
-# Skip scikit-learn to avoid Cython compilation issues
-# matplotlib and other visualization libraries are optional for core functionality
+# Skip all optional dependencies to minimize build issues
